@@ -1,0 +1,56 @@
+version: '{build}'
+platform: x64
+configuration: Release
+os: Visual Studio 2015
+
+cache:
+    - C:\icu4c -> .appveyor.yml
+
+install:
+    - choco install pscx
+    - ps: >-
+        $pscxPath = "C:\Program Files (x86)\PowerShell Community Extensions\Pscx3\Pscx";
+
+        if (!(Test-Path $pscxPath))
+        {
+            $pscxPath = $null;
+            Write-Host "Searching for the pscx powershell module.";
+            $pscxPath = (Get-ChildItem -Path "C:\Program Files\" -Filter "pscx.dll" -Recurse).FullName;
+            if (!$pscxPath) { $pscxPath = (Get-ChildItem -Path "C:\Program Files (x86)\" -Filter "pscx.dll" -Recurse).FullName; }
+            $pscxPath = Split-Path $pscxPath;
+            Write-Host "Found it at " + $pscxPath;
+        }
+
+        $env:PSModulePath += ";" + $pscxPath;
+
+        if (!(Test-Path C:\icu4c)) {
+          mkdir C:\icu4c
+          cd C:\icu4c
+          echo "Downloading ICU 56.1..."
+          appveyor DownloadFile http://download.icu-project.org/files/icu4c/56.1/icu4c-56_1-src.zip
+          echo "Extracting ICU 56.1..."
+          7z x icu4c-56_1-src.zip
+          cd icu\source
+          $oldPath = $env:Path
+          $env:Path = "C:\cygwin\bin;" + $env:Path
+          Invoke-Batchfile "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+          echo "Configuring ICU 56.1..."
+          bash runConfigureICU Cygwin/MSVC -prefix=/cygdrive/c/icu4c/dist
+          echo "Building ICU 56.1..."
+          make
+          echo "Installing ICU 56.1..."
+          make install
+          $env:Path = $oldPath
+        }
+before_build:
+    - cd C:\projects\meta
+    - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+    - git submodule update --init --recursive
+    - mkdir build
+    - cd build
+    - cmake .. -DICU_ROOT=C:\icu4c\dist -G "Visual Studio 14 2015 Win64"
+build:
+    project: C:\projects\meta\build\meta.sln
+test_script:
+    - cd C:\projects\meta\build
+    - ctest --output-on-failure
