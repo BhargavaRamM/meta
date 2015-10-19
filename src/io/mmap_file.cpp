@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #else
+#include <io.h>
 #include "mman.h"
 #endif
 
@@ -24,7 +25,11 @@ namespace io
 mmap_file::mmap_file(const std::string& path)
     : path_{path}, start_{nullptr}, size_{filesystem::file_size(path)}
 {
+#ifdef _WIN32
+    file_descriptor_ = _open(path_.c_str(), O_RDONLY);
+#else
     file_descriptor_ = open(path_.c_str(), O_RDONLY);
+#endif
     if (file_descriptor_ < 0)
         throw mmap_file_exception{"error obtaining file descriptor for "
                                   + path_};
@@ -33,7 +38,11 @@ mmap_file::mmap_file(const std::string& path)
                          file_descriptor_, 0);
     if (start_ == nullptr)
     {
+#ifdef _WIN32
+        _close(file_descriptor_);
+#else
         close(file_descriptor_);
+#endif
         throw mmap_file_exception("error memory-mapping " + path_);
     }
 }
