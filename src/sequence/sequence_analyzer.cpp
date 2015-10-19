@@ -4,6 +4,7 @@
  */
 
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 #include "io/packed.h"
