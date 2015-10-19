@@ -3,6 +3,7 @@ project(meta)
 
 option(USE_LIBCXX "Use libc++ for the C++ standard library" ON)
 option(ENABLE_PROFILING "Link against gperftools profiler library" OFF)
+option(BUILD_LIBSVM_MODULES "Build support for libsvm/liblinear" ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 

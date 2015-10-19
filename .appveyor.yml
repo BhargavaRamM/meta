@@ -48,7 +48,7 @@ before_build:
     - git submodule update --init --recursive
     - mkdir build
     - cd build
-    - cmake .. -DICU_ROOT=C:\icu4c\dist -G "Visual Studio 14 2015 Win64"
+    - cmake .. -DICU_ROOT=C:\icu4c\dist -DBUILD_LIBSVM_MODULES=Off -G "Visual Studio 14 2015 Win64"
 build:
     project: C:\projects\meta\build\meta.sln
 test_script:
