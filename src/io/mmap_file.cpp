@@ -22,14 +22,35 @@ namespace meta
 namespace io
 {
 
+namespace
+{
+#ifdef _WIN32
+int open_fd(const char* filename, int oflag)
+{
+    return _open(filename, oflag);
+}
+
+int close_fd(int fd)
+{
+    return _close(fd);
+}
+#else
+int open_fd(const char* filename, int oflag)
+{
+    return open(filename, oflag);
+}
+
+int close_fd(int fd)
+{
+    return close(fd);
+}
+#endif
+}
+
 mmap_file::mmap_file(const std::string& path)
     : path_{path}, start_{nullptr}, size_{filesystem::file_size(path)}
 {
-#ifdef _WIN32
-    file_descriptor_ = _open(path_.c_str(), O_RDONLY);
-#else
-    file_descriptor_ = open(path_.c_str(), O_RDONLY);
-#endif
+    file_descriptor_ = open_fd(path_.c_str(), O_RDONLY);
     if (file_descriptor_ < 0)
         throw mmap_file_exception{"error obtaining file descriptor for "
                                   + path_};
@@ -38,11 +59,7 @@ mmap_file::mmap_file(const std::string& path)
                          file_descriptor_, 0);
     if (start_ == nullptr)
     {
-#ifdef _WIN32
-        _close(file_descriptor_);
-#else
-        close(file_descriptor_);
-#endif
+        close_fd(file_descriptor_);
         throw mmap_file_exception("error memory-mapping " + path_);
     }
 }
@@ -76,7 +93,7 @@ mmap_file& mmap_file::operator=(mmap_file&& other)
         if (start_)
         {
             munmap(start_, size_);
-            close(file_descriptor_);
+            close_fd(file_descriptor_);
         }
         path_ = std::move(other.path_);
         start_ = std::move(other.start_);
@@ -102,7 +119,7 @@ mmap_file::~mmap_file()
     if (start_ != nullptr)
     {
         munmap(start_, size_);
-        close(file_descriptor_);
+        close_fd(file_descriptor_);
     }
 }
 }
