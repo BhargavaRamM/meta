@@ -15,6 +15,7 @@
 #include "sequence/analyzers/ngram_pos_analyzer.h"
 #include "util/printing.h"
 #include "util/progress.h"
+#include "util/string_view.h"
 #include "util/time.h"
 
 using std::cout;
@@ -27,12 +28,12 @@ classify::confusion_matrix cv(Creator&& creator,
                               classify::multiclass_dataset_view docs, bool even)
 {
     classify::confusion_matrix matrix;
-    auto msec = common::time(
-        [&]()
-        {
-            matrix = classify::cross_validate(std::forward<Creator>(creator),
-                                              docs, 5, even);
-        });
+    auto msec
+        = common::time([&]()
+                       {
+                           matrix = classify::cross_validate(
+                               std::forward<Creator>(creator), docs, 5, even);
+                       });
     std::cerr << "time elapsed: " << msec.count() / 1000.0 << "s" << std::endl;
     matrix.print();
     matrix.print_stats();
@@ -93,7 +94,8 @@ int main(int argc, char* argv[])
         classify::multiclass_dataset_view)> creator;
     auto classifier_method = *class_config->get_as<std::string>("method");
     auto even = class_config->get_as<bool>("even-split").value_or(false);
-    if (classifier_method == "knn" || classifier_method == "nearest-centroid")
+    if (classifier_method == util::string_view{"knn"}
+        || classifier_method == util::string_view{"nearest-centroid"})
     {
         auto i_idx = index::make_index<index::inverted_index>(*config);
         creator = [=](classify::multiclass_dataset_view fold)
