@@ -3,6 +3,7 @@
  * @author Chase Geigle
  */
 
+#include <cctype>
 #include <iostream>
 #include <fstream>
 #include "parser/io/ptb_reader.h"
