@@ -486,8 +486,8 @@ using identity = typename std::decay<T>::type;
 }
 
 template <class Char, class Traits>
-constexpr bool operator==(basic_string_view<Char, Traits> lhs,
-                          basic_string_view<Char, Traits> rhs) noexcept
+constexpr bool operator==(const basic_string_view<Char, Traits>& lhs,
+                          const basic_string_view<Char, Traits>& rhs) noexcept
 {
     return lhs.compare(rhs) == 0;
 }
