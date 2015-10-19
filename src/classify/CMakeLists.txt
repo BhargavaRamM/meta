@@ -3,23 +3,17 @@ project(meta-classify)
 add_subdirectory(kernel)
 add_subdirectory(tools)
 
-if (BUILD_LIBSVM_MODULES)
-  ExternalProject_Add(liblinear
-    SOURCE_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/liblinear
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND CXX=${CMAKE_CXX_COMPILER} CC=${CMAKE_C_COMPILER} make
-    LOG_BUILD 0
-    INSTALL_COMMAND "")
+ExternalProject_Add(liblinear
+  SOURCE_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/liblinear
+  BINARY_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/liblinear/build
+  CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+  INSTALL_COMMAND "")
 
-  ExternalProject_Add(libsvm
-    SOURCE_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/libsvm
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND CXX=${CMAKE_CXX_COMPILER} CC=${CMAKE_C_COMPILER} make
-    LOG_BUILD 0
-    INSTALL_COMMAND "")
-endif()
+ExternalProject_Add(libsvm
+  SOURCE_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/libsvm
+  BINARY_DIR ${meta_SOURCE_DIR}/../deps/libsvm-modules/libsvm/build
+  CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
+  INSTALL_COMMAND "")
 
 add_library(meta-classify binary_classifier_factory.cpp
                           classifier/binary_classifier.cpp
@@ -37,6 +31,4 @@ add_library(meta-classify binary_classifier_factory.cpp
                           classifier_factory.cpp
                           confusion_matrix.cpp)
 target_link_libraries(meta-classify meta-ranker meta-learn meta-kernel)
-if (BUILD_LIBSVM_MODULES)
-  add_dependencies(meta-classify liblinear libsvm)
-endif()
+add_dependencies(meta-classify liblinear libsvm)
