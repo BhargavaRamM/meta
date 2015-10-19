@@ -25,8 +25,7 @@ namespace meta
 namespace filesystem
 {
 
-#if !defined META_HAS_EXPERIMENTAL_FILESYSTEM                                  \
-    && !defined META_HAS_TR2_SYS_FILESYSTEM
+#ifndef META_HAS_EXPERIMENTAL_FILESYSTEM
 namespace
 {
 using traits = platformstl::filesystem_traits<char>;
@@ -111,12 +110,8 @@ std::uintmax_t remove_all(const std::string& path)
 {
     return remove_all(path_type{path.c_str()});
 }
-#else // filesystem namespace exists, somewhere
-#if META_HAS_EXPERIMENTAL_FILESYSTEM
-using fs = std::experimental::filesystem;
-#elif META_HAS_TR2_SYS_FILESYSTEM
-using fs = std::tr2::sys::filesystem;
-#endif
+#else // META_HAS_EXPERIMENTAL_FILESYSTEM
+namespace fs = std::experimental::filesystem;
 
 bool delete_file(const std::string& filename)
 {

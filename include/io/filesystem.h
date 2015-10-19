@@ -13,6 +13,9 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#if META_HAS_EXPERIMENTAL_FILESYSTEM
+#include <experimental/filesystem>
+#endif
 
 namespace meta
 {
